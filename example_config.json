@@ -1,0 +1,41 @@
+{
+  "global": {
+    "language": "en",
+    "menuEnabled": true,
+    "menuAlignRight": false,
+    "menuPageKey": "Tab",
+    "hideDefaultAnnouncement": false,
+    "hideDefaultDirectMessage": false,
+    "hideDefaultWarning": false,
+    "hideDefaultScheduledRestartWarning": false,
+    "serverName": "servername"
+  },
+  "logger": {},
+  "monitor": {
+    "restarterSchedule": [],
+    "resourceStartingTolerance": 120
+  },
+  "playerDatabase": {
+    "onJoinCheckBan": true,
+    "whitelistMode": "disabled",
+    "whitelistedDiscordRoles": [],
+    "whitelistRejectionMessage": "Please join http://discord.gg/example and request to be whitelisted.",
+    "requiredBanHwidMatches": 1,
+    "banRejectionMessage": "You can join http://discord.gg/example to appeal this ban."
+  },
+  "webServer": {
+    "disableNuiSourceCheck": false
+  },
+  "discordBot": {
+    "enabled": false,
+    "embedJson": "{\n  \"title\": \"{{serverName}}\",\n  \"url\": \"{{serverBrowserUrl}}\",\n  \"description\": \"You can configure this embed in `txAdmin > Settings > Discord Bot`, and edit everything from it (except footer).\",\n  \"fields\": [\n    {\n      \"name\": \"> STATUS\",\n      \"value\": \"```\\n{{statusString}}\\n```\",\n      \"inline\": true\n    },\n    {\n      \"name\": \"> PLAYERS\",\n      \"value\": \"```\\n{{serverClients}}/{{serverMaxClients}}\\n```\",\n      \"inline\": true\n    },\n    {\n      \"name\": \"> F8 CONNECT COMMAND\",\n      \"value\": \"```\\nconnect 123.123.123.123\\n```\"\n    },\n    {\n      \"name\": \"> NEXT RESTART\",\n      \"value\": \"```\\n{{nextScheduledRestart}}\\n```\",\n      \"inline\": true\n    },\n    {\n      \"name\": \"> UPTIME\",\n      \"value\": \"```\\n{{uptime}}\\n```\",\n      \"inline\": true\n    }\n  ],\n  \"image\": {\n    \"url\": \"https://forum-cfx-re.akamaized.net/original/5X/e/e/c/b/eecb4664ee03d39e34fcd82a075a18c24add91ed.png\"\n  },\n  \"thumbnail\": {\n    \"url\": \"https://forum-cfx-re.akamaized.net/original/5X/9/b/d/7/9bd744dc2b21804e18c3bb331e8902c930624e44.png\"\n  }\n}",
+    "embedConfigJson": "{\n  \"onlineString\": \"🟢 Online\",\n  \"onlineColor\": \"#0BA70B\",\n  \"partialString\": \"🟡 Partial\",\n  \"partialColor\": \"#FFF100\",\n  \"offlineString\": \"🔴 Offline\",\n  \"offlineColor\": \"#A70B28\",\n  \"buttons\": [\n    {\n      \"emoji\": \"1062338355909640233\",\n      \"label\": \"Connect\",\n      \"url\": \"{{serverJoinUrl}}\"\n    },\n    {\n      \"emoji\": \"1062339910654246964\",\n      \"label\": \"txAdmin Discord\",\n      \"url\": \"https://discord.gg/txAdmin\"\n    },\n    {\n      \"emoji\": \"😏\",\n      \"label\": \"ZAP-Hosting\",\n      \"url\": \"https://zap-hosting.com/txadmin6\"\n    }\n  ]\n}"
+  },
+  "fxRunner": {
+    "onesync": "on",
+    "autostart": true,
+    "serverDataPath": "path/to/server-data",
+    "cfgPath": "path/to/server-data/server.cfg"
+  },
+  "banTemplates": []
+}

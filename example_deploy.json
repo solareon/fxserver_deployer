@@ -1,0 +1,14 @@
+{
+    "artifact": "7290",
+    "recipeUrl": "https://raw.githubusercontent.com/Qbox-project/txAdminRecipe/main/qbox-stable.yaml",
+    "sqlServer": "localhost",
+    "sqlUser": "root",
+    "sqlPass": "password",
+    "sqlDb": "qbox",
+    "sqlPort": "3306",
+    "serverName": "Qbox Stable",
+    "deployFolder": "qbox_stable",
+    "svLicenseKey": "changeme",
+    "maxClients": "48",
+    "removeGit": false
+}
