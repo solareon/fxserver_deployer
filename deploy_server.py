@@ -11,6 +11,7 @@ import string
 import mysql.connector
 import pyinputplus as pyip
 import json
+import py7zr
 from bs4 import BeautifulSoup
 from getpass import getpass
 from mysql.connector import Error
@@ -38,13 +39,18 @@ def download_file(url, dest):
         print("Failed to download file")
         return False
 
-def extract_tar(file, dest):
-    with tarfile.open(file, 'r:xz') as tar_ref:
-        tar_ref.extractall(dest)
-
-def extract_zip(file, dest):
-    with zipfile.ZipFile(file, 'r') as zip_ref:
-        zip_ref.extractall(dest)
+def extract_archive(file, dest):
+    if file.endswith('.tar.xz'):
+        with tarfile.open(file, 'r:xz') as tar_ref:
+            tar_ref.extractall(dest)
+    elif file.endswith('.zip'):
+        with zipfile.ZipFile(file, 'r') as zip_ref:
+            zip_ref.extractall(dest)
+    elif file.endswith('.7z'):
+        with py7zr.SevenZipFile(file, mode='r') as zip7_ref:
+            zip7_ref.extractall(path=dest)
+    else:
+        print("Unsupported archive format")
 
 def generate_db_name(recipe):
     name = recipe.get('name').replace(' ', '')
@@ -54,6 +60,10 @@ def generate_db_name(recipe):
 # fetch build numbers
 def fetch_build_numbers():
     artifact_url = 'https://runtime.fivem.net/artifacts/fivem/build_server_windows/master/' if os.name == 'nt' else 'https://runtime.fivem.net/artifacts/fivem/build_proot_linux/master/'
+    if os.name == 'nt':
+        search_url = r'(\d+)-[\da-f]+/server\.7z'
+    else:
+        search_url = r'(\d+)-[\da-f]+/fx\.tar\.xz'
 
     response = requests.get(artifact_url)
     response.raise_for_status()
@@ -64,7 +74,7 @@ def fetch_build_numbers():
 
     for link in soup.find_all('a', href=True):
         href = link['href']
-        match = re.search(r'(\d+)-[\da-f]+/fx\.tar\.xz', href)
+        match = re.search(search_url, href)
         if match:
             build_number = match.group(1)
             builds[build_number] = artifact_url + href
@@ -244,9 +254,12 @@ def prompt_user(builds, recommended_build):
 def replace_monitor_folder(dest):
     txadmin_latest_url = "https://github.com/tabarra/txAdmin/releases/latest/download/monitor.zip"
     download_file(txadmin_latest_url, 'txAdmin.zip')
-    extract_zip('txAdmin.zip', 'txAdmin')
+    extract_archive('txAdmin.zip', 'txAdmin')
     monitor_src = 'txAdmin'
-    monitor_dest = os.path.join(dest, 'alpine', 'opt', 'cfx-server', 'citizen', 'system_resources', 'monitor')
+    if os.name == 'nt':
+        monitor_dest = os.path.join(dest, 'citizen', 'system_resources', 'monitor')
+    else:
+        monitor_dest = os.path.join(dest, 'alpine', 'opt', 'cfx-server', 'citizen', 'system_resources', 'monitor')
 
     if os.path.exists(monitor_dest):
         shutil.rmtree(monitor_dest)
@@ -297,7 +310,7 @@ def process_recipe(recipe, deploy_folder, sql_info):
         elif action == 'download_file':
             download_file(task['url'], os.path.join(recipe_dest, task['path']))
         elif action == 'unzip':
-            extract_zip(os.path.join(recipe_dest, task['src']), os.path.join(recipe_dest, task['dest']))
+            extract_archive(os.path.join(recipe_dest, task['src']), os.path.join(recipe_dest, task['dest']))
         elif action == 'remove_path':
             shutil.rmtree(os.path.join(recipe_dest, task['path']))
         elif action == 'connect_database':
@@ -474,8 +487,9 @@ def main():
         return
 
     print("Starting server install...")
-    download_file(artifact_url, 'fx.tar.xz')
-    extract_tar('fx.tar.xz', 'fxServer')
+    fx_server_archive = 'server.7z' if os.name == 'nt' else 'fx.tar.xz'
+    download_file(artifact_url, fx_server_archive)
+    extract_archive(fx_server_archive, 'fxServer')
     print("Updating txAdmin...")
     replace_monitor_folder('fxServer')
     process_recipe(recipe, deploy_folder, sql_info)
@@ -489,8 +503,8 @@ def main():
     create_txadmin_config(server_config, deploy_folder)
     
     print("Cleaning up...")
-    if os.path.exists('fx.tar.xz'):
-        os.remove('fx.tar.xz')
+    if os.path.exists(fx_server_archive):
+        os.remove(fx_server_archive)
     if os.path.exists('recipe.yaml') and recipe_url.startswith('http'):
         os.remove('recipe.yaml')
 

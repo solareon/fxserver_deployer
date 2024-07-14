@@ -1,0 +1,7 @@
+requests
+pyyaml
+mysql-connector-python
+pyinputplus
+py7zr
+beautifulsoup4
+tqdm
