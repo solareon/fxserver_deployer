@@ -434,6 +434,10 @@ def process_template_deploy(builds):
 
 def main():
     print("Welcome to the fxServer server deployment script with txAdmin recipe support.")
+    #check if git is available
+    if not shutil.which('git'):
+        print("Git is required to download recipes. Please install git and try again.")
+        return
     builds, recommended_build = fetch_build_numbers()
     if os.path.exists('deploy.json'):
         user_inputs, recipe = process_template_deploy(builds)
