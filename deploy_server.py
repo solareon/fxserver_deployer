@@ -51,6 +51,15 @@ def extract_archive(file, dest):
             zip7_ref.extractall(path=dest)
     else:
         print("Unsupported archive format")
+        
+def onerror(func, path, exc_info):
+    import stat
+    # Is the error an access error?
+    if not os.access(path, os.W_OK):
+        os.chmod(path, stat.S_IWUSR)
+        func(path)
+    else:
+        raise
 
 def generate_db_name(recipe):
     name = recipe.get('name').replace(' ', '')
@@ -221,7 +230,7 @@ def prompt_user(builds, recommended_build):
     if os.path.exists(deploy_path):
         remove_folder = input(f"Folder {deploy_folder} already exists. Remove it? (y/n): ").strip()
         if remove_folder.lower() == 'y':
-            shutil.rmtree(deploy_path)
+            shutil.rmtree(deploy_path, onerror=onerror)
         else:
             print("Exiting.")
             return None
@@ -262,10 +271,10 @@ def replace_monitor_folder(dest):
         monitor_dest = os.path.join(dest, 'alpine', 'opt', 'cfx-server', 'citizen', 'system_resources', 'monitor')
 
     if os.path.exists(monitor_dest):
-        shutil.rmtree(monitor_dest)
+        shutil.rmtree(monitor_dest, onerror=onerror)
 
     shutil.copytree(monitor_src, monitor_dest)
-    shutil.rmtree('txAdmin')
+    shutil.rmtree('txAdmin', onerror=onerror)
     os.remove('txAdmin.zip')
 
 def process_recipe(recipe, deploy_folder, sql_info):
@@ -294,7 +303,7 @@ def process_recipe(recipe, deploy_folder, sql_info):
                             shutil.move(os.path.join(root, file), os.path.join(dest, file))
                         for dir in dirs:
                             shutil.move(os.path.join(root, dir), os.path.join(dest, dir))
-                    shutil.rmtree(subpath_dest)
+                    shutil.rmtree(subpath_dest, onerror=onerror)
         elif action == 'move_path':
             shutil.move(os.path.join(recipe_dest, task['src']), os.path.join(recipe_dest, task['dest']))
         elif action == 'copy_path':
@@ -302,7 +311,7 @@ def process_recipe(recipe, deploy_folder, sql_info):
             dest = os.path.join(recipe_dest, task['dest'])
             overwrite = task.get('overwrite', False)
             if overwrite and os.path.exists(dest):
-                shutil.rmtree(dest)
+                shutil.rmtree(dest, onerror=onerror)
             if not overwrite and os.path.exists(dest):
                 print(f"Skipping task: Destination path already exists: {dest}")
                 continue
@@ -312,7 +321,7 @@ def process_recipe(recipe, deploy_folder, sql_info):
         elif action == 'unzip':
             extract_archive(os.path.join(recipe_dest, task['src']), os.path.join(recipe_dest, task['dest']))
         elif action == 'remove_path':
-            shutil.rmtree(os.path.join(recipe_dest, task['path']))
+            shutil.rmtree(os.path.join(recipe_dest, task['path']), onerror=onerror)
         elif action == 'connect_database':
             db_connection = connect_database(sql_info)
             if not db_connection:
@@ -340,7 +349,7 @@ def process_recipe(recipe, deploy_folder, sql_info):
             for root, dirs, files in os.walk(recipe_dest):
                 for dir in dirs:
                     if dir == '.git':
-                        shutil.rmtree(os.path.join(root, dir))
+                        shutil.rmtree(os.path.join(root, dir), onerror=onerror)
         else:
             print(f"Skipping unsupported action: {task['action']}")
 
