@@ -337,7 +337,7 @@ def process_recipe(recipe, deploy_folder, sql_info):
                 with open(os.path.join(recipe_dest, file), 'r') as query_file:
                     query = query_file.read()
             db_connection = connect_database(sql_info)
-            db_connection.cursor().execute(query)
+            db_connection.cursor().execute(query, multi=True)
         elif action == 'ensure_dir':
             os.makedirs(os.path.join(recipe_dest, task['path']), exist_ok=True)
         elif action == 'write_file':
@@ -383,7 +383,7 @@ def create_txadmin_config(server_config, deploy_folder):
     deploy_path = os.path.join(current_dir, 'fxServer', 'txData', deploy_folder)
     os.makedirs(json_path, exist_ok=True)
     
-    with open('example_config.json', 'r') as file:
+    with open('example_config.json', 'r', encoding="utf-8") as file:
         config = json.load(file)
         config['global']['serverName'] = server_config['serverName']
         config['fxRunner']['serverDataPath'] = deploy_path
@@ -394,7 +394,7 @@ def create_txadmin_config(server_config, deploy_folder):
 
 def process_template_deploy(builds):
     print("Found deploy.json file. Using the values from the file.")
-    with open('deploy.json', 'r') as file:
+    with open('deploy.json', 'r', encoding="utf-8") as file:
         deploy_recipe = json.load(file)
     db_connection, db_connection_string = validate_sql_connection({
         'ip': deploy_recipe['sqlServer'],
