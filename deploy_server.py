@@ -309,13 +309,21 @@ def process_recipe(recipe, deploy_folder, sql_info):
         elif action == 'copy_path':
             src = os.path.join(recipe_dest, task['src'])
             dest = os.path.join(recipe_dest, task['dest'])
+            if not os.path.exists(os.path.dirname(dest)):
+                os.makedirs(os.path.dirname(dest), exist_ok=True)
             overwrite = task.get('overwrite', False)
             if overwrite and os.path.exists(dest):
-                shutil.rmtree(dest, onerror=onerror)
+                if os.path.isfile(dest):
+                    os.remove(dest)
+                elif os.path.isdir(dest):
+                    shutil.rmtree(dest, onerror=onerror)
             if not overwrite and os.path.exists(dest):
                 print(f"Skipping task: Destination path already exists: {dest}")
                 continue
-            shutil.copytree(src, dest)
+            if os.path.isfile(src):
+                shutil.copy(src, dest)
+            elif os.path.isdir(src):
+                shutil.copytree(src, dest)
         elif action == 'download_file':
             download_file(task['url'], os.path.join(recipe_dest, task['path']))
         elif action == 'unzip':
